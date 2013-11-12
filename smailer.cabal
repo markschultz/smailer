@@ -12,7 +12,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 executable smailer
-  main-is: src/smailer.hs
+  main-is: smailer.hs
   build-depends:
     base >=4.5 && <4.7,
     scotty,
