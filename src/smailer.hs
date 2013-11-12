@@ -17,6 +17,8 @@ main = do
                 html "Hello World!"
             get "/:to/:text" $ do
                 to <- param "to"
-                text' <- param "text"
-                html $ mconcat ["<h1>TO:", to, "</h1><br/><h1>", text', "</h1>"]
+                txt <- param "text"
+                html $ mconcat [ "<h1>TO: ", to
+                               , "</h1><br/><h1>FROM: ", txt
+                               , "</h1>" ]
 
