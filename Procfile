@@ -1,1 +1,1 @@
-web: ./dist/build/scrummailer/scrummailer
+web: ./dist/build/smailer/smailer
