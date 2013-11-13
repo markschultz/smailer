@@ -20,6 +20,8 @@ main = do
         scotty port $ do
             get "/" $ do
                 html "Hello World!"
+            get "/loaderio-9204d6a37af2101e440254b90c29248a" $ do
+                text "loaderio-9204d6a37af2101e440254b90c29248a"
             get "/:to/:text" $ do
                 to <- param "to"
                 txt <- param "text"
@@ -28,6 +30,4 @@ main = do
                                , "</h1>" ]
             get "/db" $ do
                 html $ TL.fromStrict up
-            get "/loaderio-9204d6a37af2101e440254b90c29248a" $ do
-                text "loaderio-9204d6a37af2101e440254b90c29248a"
 
