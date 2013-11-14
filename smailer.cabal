@@ -19,6 +19,7 @@ executable smailer
     http-conduit,
     network,
     bytestring,
-    text
+    text,
+    http-types
   hs-source-dirs: src
   default-language:    Haskell2010

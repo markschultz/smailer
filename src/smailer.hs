@@ -5,6 +5,7 @@ import Mailgun
 import Data.Monoid
 import System.Environment
 import Control.Monad
+import Network.HTTP.Types
 import Data.Text as T
 import qualified Data.Text.Lazy as TL
 
@@ -30,4 +31,8 @@ main = do
                                , "</h1>" ]
             get "/db" $ do
                 html $ TL.fromStrict up
+            post "/emails" $ do
+                f <- param "from"
+                s <- param "subject"
+                text $ mconcat ["from: " , f , "\nsubject: " , s]
 
