@@ -18,10 +18,12 @@ import qualified Text.Blaze.Html5 as H
 import Text.Blaze.Html5 ((!))
 import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html.Renderer.Text (renderHtml)
+import System.IO
 
 blaze = html . renderHtml
 
 main = do
+        hSetBuffering stdout LineBuffering
         id <- forkIO $ Scheduler.testThread 100
         putStrLn $ "forked to: " ++ show id
         port <- liftM read $ getEnv "PORT"
