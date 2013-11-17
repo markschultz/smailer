@@ -2,6 +2,8 @@
 
 import Web.Scotty
 import Mailgun
+import Scheduler
+import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
 import System.Environment
@@ -9,8 +11,8 @@ import Control.Monad
 import Network.HTTP.Types
 import Data.Text as T
 import Data.Text.Encoding as T
-import Data.ByteString as B
-import Data.ByteString.Char8 as B8
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import qualified Text.Blaze.Html5 as H
 import Text.Blaze.Html5 ((!))
@@ -20,6 +22,8 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 blaze = html . renderHtml
 
 main = do
+        id <- forkIO $ Scheduler.testThread 100
+        putStrLn $ "forked to: " ++ show id
         port <- liftM read $ getEnv "PORT"
         mgKey <- getEnv "MAILGUN_API_KEY"
         mgLogin <- getEnv "MAILGUN_SMTP_LOGIN"
