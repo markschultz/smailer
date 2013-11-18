@@ -23,6 +23,8 @@ executable smailer
     http-types,
     transformers,
     blaze-html,
-    blaze-markup
+    blaze-markup,
+    time
   hs-source-dirs: src
+--  ghc-options: -threaded
   default-language:    Haskell2010

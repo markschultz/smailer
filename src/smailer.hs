@@ -2,7 +2,7 @@
 
 import Web.Scotty
 import Mailgun
-import Scheduler
+--import Scheduler
 import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
@@ -24,8 +24,6 @@ blaze = html . renderHtml
 
 main = do
         hSetBuffering stdout LineBuffering
-        id <- forkIO $ Scheduler.testThread 100
-        putStrLn $ "forked to: " ++ show id
         port <- liftM read $ getEnv "PORT"
         mgKey <- getEnv "MAILGUN_API_KEY"
         mgLogin <- getEnv "MAILGUN_SMTP_LOGIN"
@@ -42,6 +40,10 @@ main = do
                 f <- param "from"
                 s <- param "subject"
                 text $ mconcat ["from: " , f , "\nsubject: " , s]
+            get "/test-trigger" $ do
+                status status200
+            get "/email-trigger" $ do
+                status status200
             get "/send/:to/:subj" $ do
                 subject <- param "subj"
                 to <- param "to"
