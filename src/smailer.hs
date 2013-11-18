@@ -40,9 +40,9 @@ main = do
                 f <- param "from"
                 s <- param "subject"
                 text $ mconcat ["from: " , f , "\nsubject: " , s]
-            get "/test-trigger" $ do
+            post "/test-trigger" $ do
                 status status200
-            get "/email-trigger" $ do
+            post "/email-trigger" $ do
                 status status200
             get "/send/:to/:subj" $ do
                 subject <- param "subj"
