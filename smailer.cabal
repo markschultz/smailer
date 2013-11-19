@@ -24,7 +24,12 @@ executable smailer
     transformers,
     blaze-html,
     blaze-markup,
-    time
+    time,
+    persistent,
+    persistent-postgresql,
+    persistent-template,
+    resourcet,
+    monad-logger
   hs-source-dirs: src
 --  ghc-options: -threaded
   default-language:    Haskell2010

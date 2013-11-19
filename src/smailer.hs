@@ -3,6 +3,7 @@
 import Web.Scotty
 import Mailgun
 --import Scheduler
+import Database
 import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
@@ -19,8 +20,22 @@ import Text.Blaze.Html5 ((!))
 import Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import System.IO
+import qualified Database.Persist
+import qualified Database.Persist.TH
+import qualified Database.Persist.Postgresql
+import Control.Monad.Trans.Resource
+import Control.Monad.Logger
 
 blaze = html . renderHtml
+
+getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
+    " host=" , h , " port=" , p , " dbname=" , db]
+    where
+        (auth:server:_) = splitOn "@" t
+        (_:up:_) = splitOn "//" auth
+        (u:pw:_) = splitOn ":" up
+        (hp:db:_) = splitOn "/" server
+        (h:p:_) = splitOn ":" hp
 
 main = do
         hSetBuffering stdout LineBuffering
@@ -29,20 +44,22 @@ main = do
         mgLogin <- getEnv "MAILGUN_SMTP_LOGIN"
         let (_:mgDomain:_) = splitOn "@" $ T.pack mgLogin
         dbc <- getEnv "DATABASE_URL"
-        let (auth:server) = splitOn "@" $ T.pack dbc
-        let (_:up:_) = splitOn "//" auth
+        let dbp = T.pack dbc
         scotty port $ do
             get "/" $ html "Hello World!"
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
-            get "/db" $ html $ TL.fromStrict up
+            get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
+            get "/db1" $ do
+                liftIO $ runResourceT . runNoLoggingT $ insertRow $ T.encodeUtf8 $ getConnectionString dbp
+                status ok200
             post "/emails" $ do
                 f <- param "from"
                 s <- param "subject"
                 text $ mconcat ["from: " , f , "\nsubject: " , s]
-            post "/test-trigger" $ do
+            post "/test-trigger" $
                 status status200
-            post "/email-trigger" $ do
+            post "/email-trigger" $
                 status status200
             get "/send/:to/:subj" $ do
                 subject <- param "subj"
