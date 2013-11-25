@@ -51,7 +51,7 @@ main = do
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
             get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
             get "/db1" $ do
-                liftIO $ runResourceT . runNoLoggingT $ insertRow $ T.encodeUtf8 $ getConnectionString dbp
+                liftIO $ runDB (T.encodeUtf8 $ getConnectionString dbp) insertRow
                 status ok200
             post "/emails" $ do
                 f <- param "from"

@@ -11,6 +11,8 @@ import Database.Persist.TH
 import Database.Persist.Postgresql
 import Data.Time
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Resource
+import Control.Monad.Logger
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 TimeEntry
@@ -18,7 +20,10 @@ TimeEntry
     deriving Show
 |]
 
-insertRow c = withPostgresqlConn c $ runSqlConn $ do
+runDB c sql = runResourceT . runNoLoggingT $ withPostgresqlConn c $ runSqlConn sql
+
+insertRow :: (MonadBaseControl IO m, MonadResource m, MonadLogger m) => SqlPersistT m ()
+insertRow = do
     runMigration migrateAll
     time <- liftIO getCurrentTime
     id <- insert $ TimeEntry time
