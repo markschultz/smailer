@@ -32,7 +32,7 @@ executable smailer
     monad-logger,
     wai-extra,
     data-default,
-    vault,
+    vault <0.3.0,
     wai-session,
     wai-session-clientsession
   hs-source-dirs: src

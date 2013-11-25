@@ -28,7 +28,7 @@ import Control.Monad.Logger
 import Network.Wai.Middleware.Gzip (gzip,def)
 import Network.Wai.Session.ClientSession (clientsessionStore)
 import Network.Wai.Session (withSession, Session)
-import qualified Data.Vault.Strict as Vault
+import qualified Data.Vault as Vault
 import Data.Default (def)
 
 blaze = html . renderHtml
