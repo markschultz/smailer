@@ -29,7 +29,12 @@ executable smailer
     persistent-postgresql,
     persistent-template,
     resourcet,
-    monad-logger
+    monad-logger,
+    wai-extra,
+    data-default,
+    vault,
+    wai-session,
+    wai-session-clientsession
   hs-source-dirs: src
-  ghc-options: -O2
+  -- ghc-options: -O2
   default-language:    Haskell2010

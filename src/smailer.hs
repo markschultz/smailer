@@ -25,6 +25,11 @@ import qualified Database.Persist.TH
 import qualified Database.Persist.Postgresql
 import Control.Monad.Trans.Resource
 import Control.Monad.Logger
+import Network.Wai.Middleware.Gzip (gzip,def)
+import Network.Wai.Session.ClientSession (clientsessionStore)
+import Network.Wai.Session (withSession, Session)
+import qualified Data.Vault.Strict as Vault
+import Data.Default (def)
 
 blaze = html . renderHtml
 
@@ -46,6 +51,7 @@ main = do
         dbc <- getEnv "DATABASE_URL"
         let dbp = T.pack dbc
         scotty port $ do
+            middleware $ gzip def
             get "/" $ html "Hello World!"
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
