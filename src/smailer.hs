@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Web.Scotty
+import Data.Time
 import Mailgun
 --import Scheduler
 import Database
@@ -64,18 +65,23 @@ main = do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
-            get "/session" $ do
+            get "/get" $ do
                 req <- request
                 let (sl , si) = fromJust $ Vault.lookup session (vault req)
-                liftIO $ runResourceT $ si "u" "test"
                 u <- liftIO $ runResourceT $ sl "u"
                 text $ TL.pack $ fromMaybe "Nothing" u
+            get "/set" $ do
+                req <- request
+                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                t <- liftIO getCurrentTime
+                liftIO $ runResourceT $ si "u" $ show t
+                status status200
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
             get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
             get "/db1" $ do
                 liftIO $ runDB (T.encodeUtf8 $ getConnectionString dbp) insertRow
-                status ok200
+                status status200
             post "/emails" $ do
                 f <- param "from"
                 s <- param "subject"
