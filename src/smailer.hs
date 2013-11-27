@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 import Web.Scotty
 import Mailgun
@@ -27,9 +28,15 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Logger
 import Network.Wai.Middleware.Gzip (gzip,def)
 import Network.Wai.Session.ClientSession (clientsessionStore)
-import Network.Wai.Session (withSession, Session)
+import Network.Wai.Session
+import Network.Wai
+import Network.Wai.Middleware.RequestLogger
+import Web.ClientSession (getDefaultKey)
 import qualified Data.Vault as Vault
 import Data.Default (def)
+import Data.String (fromString)
+import Web.Cookie
+import Data.Maybe
 
 blaze = html . renderHtml
 
@@ -50,9 +57,19 @@ main = do
         let (_:mgDomain:_) = splitOn "@" $ T.pack mgLogin
         dbc <- getEnv "DATABASE_URL"
         let dbp = T.pack dbc
+        session <- Vault.newKey
+        key <- getDefaultKey
+        let store :: SessionStore (ResourceT IO) String String = clientsessionStore key
         scotty port $ do
+            middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
+            get "/session" $ do
+                req <- request
+                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                liftIO $ runResourceT $ si "u" "test"
+                u <- liftIO $ runResourceT $ sl "u"
+                text $ TL.pack $ fromMaybe "Nothing" u
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
             get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
