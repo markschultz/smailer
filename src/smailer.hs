@@ -1,11 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 import Web.Scotty
 import Data.Time
 import Mailgun
---import Scheduler
-import Database
+import qualified Database as DB
 import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
@@ -60,11 +58,17 @@ main = do
         let dbp = T.pack dbc
         session <- Vault.newKey
         key <- getDefaultKey
-        let store :: SessionStore (ResourceT IO) String String = clientsessionStore key
+        let store = clientsessionStore key :: SessionStore (ResourceT IO) String String
+        pool <- DB.createPool (T.encodeUtf8 $ getConnectionString dbp)
+        let rp = DB.runPool pool
+
         scotty port $ do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
+            post "/login" $ do
+                let uid = DB.login
+                status status200
             get "/get" $ do
                 req <- request
                 let (sl , si) = fromJust $ Vault.lookup session (vault req)
@@ -76,16 +80,10 @@ main = do
                 t <- liftIO getCurrentTime
                 liftIO $ runResourceT $ si "u" $ show t
                 status status200
-            get "/loaderio-9204d6a37af2101e440254b90c29248a" $
-                text "loaderio-9204d6a37af2101e440254b90c29248a"
             get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
             get "/db1" $ do
-                liftIO $ runDB (T.encodeUtf8 $ getConnectionString dbp) insertRow
+                liftIO $ rp DB.insertRow
                 status status200
-            post "/emails" $ do
-                f <- param "from"
-                s <- param "subject"
-                text $ mconcat ["from: " , f , "\nsubject: " , s]
             post "/test-trigger" $
                 status status200
             post "/email-trigger" $
@@ -104,4 +102,6 @@ main = do
                     H.br
                     H.h1 "Response:"
                     H.p $ H.toHtml $ T.pack resp
+            get "/loaderio-9204d6a37af2101e440254b90c29248a" $
+                text "loaderio-9204d6a37af2101e440254b90c29248a"
 

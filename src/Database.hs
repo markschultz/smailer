@@ -20,7 +20,9 @@ TimeEntry
     deriving Show
 |]
 
-runDB c sql = runResourceT . runNoLoggingT $ withPostgresqlConn c $ runSqlConn sql
+createPool c = createPostgresqlPool c 20
+
+runPool p sql = runSqlPersistMPool sql p
 
 insertRow :: (MonadBaseControl IO m, MonadResource m, MonadLogger m) => SqlPersistT m ()
 insertRow = do
@@ -28,3 +30,5 @@ insertRow = do
     time <- liftIO getCurrentTime
     id <- insert $ TimeEntry time
     liftIO $ print id
+
+login u p = undefined
