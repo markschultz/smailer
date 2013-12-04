@@ -64,10 +64,9 @@ main = do
             get "/register" $ do
                 html Html.register
             post "/register" $ do
-                u <- param "username"
                 p <- param "password"
                 e <- param "email"
-                resp <- liftIO $ rp $ DB.register u p e
+                resp <- liftIO $ rp $ DB.register e p
                 text $ TL.pack $ show $ resp
             post "/login" $ do
                 let uid = DB.login

@@ -19,10 +19,9 @@ TimeEntry
     stamp UTCTime
     deriving Show
 User
-    username String
-    password String
     email String
-    NameEmail username email
+    password String
+    Email email
     deriving Show
 |]
 
@@ -39,9 +38,9 @@ insertRow = do
 
 login u p = undefined
 
-register u p e = do
+register e p = do
         runMigration migrateAll
-        id <- insert $ User u p e
+        id <- insert $ User e p
         liftIO $ print id
         return id
 
