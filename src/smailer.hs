@@ -57,6 +57,12 @@ main = do
                 case auth of
                     True -> text $ TL.pack ("You are logged in. " ++ t1)
                     False -> text "You are not logged in."
+            get "/logout" $ do
+                req <- request
+                let (sl, si) = getVaultS req
+                liftIO $ runResourceT $ si "timeout" ""
+                liftIO $ runResourceT $ si "email" ""
+                redirect "/"
             get "/register" $ html Html.register
             post "/register" $ do
                 e <- param "email"
@@ -124,9 +130,9 @@ isLoggedIn (sl,si) = do
             Just [] -> return False
             Just t -> do
                 if time > (read $ t) then do
-                                liftIO $ runResourceT $ si "timeout" ""
-                                liftIO $ runResourceT $ si "email" ""
-                                return False
+                    liftIO $ runResourceT $ si "timeout" ""
+                    liftIO $ runResourceT $ si "email" ""
+                    return False
                 else do
                     liftIO $ runResourceT $ si "timeout" $ show $ addUTCTime loginTimeout time
                     return True
