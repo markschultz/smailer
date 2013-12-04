@@ -21,7 +21,7 @@ register = renderHtml $ H.html $ do
     H.h1 $ "Register"
     H.form ! A.id "register" ! method "post" ! action "/register" $ do
         H.h3 "Email Address: "
-        H.input ! type_ "text" ! name "email"
+        H.input ! type_ "email" ! name "email"
         H.br
         H.h3 "Password: "
         H.input ! type_ "password" ! name "password"
