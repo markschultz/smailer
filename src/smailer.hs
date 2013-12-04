@@ -17,31 +17,17 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import System.IO
---import qualified Database.Persist
---import qualified Database.Persist.TH
---import qualified Database.Persist.Postgresql
 import Control.Monad.Trans.Resource
---import Control.Monad.Logger
 import Network.Wai.Middleware.Gzip (gzip,def)
 import Network.Wai.Session.ClientSession (clientsessionStore)
 import Network.Wai.Session
 import Network.Wai
---import Network.Wai.Middleware.RequestLogger
 import Web.ClientSession (getDefaultKey)
 import qualified Data.Vault as Vault
 import Data.Default (def)
 import Data.String (fromString)
 import Web.Cookie
 import Data.Maybe
-
-getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
-    " host=" , h , " port=" , p , " dbname=" , db]
-    where
-        (auth:server:_) = splitOn "@" t
-        (_:up:_) = splitOn "//" auth
-        (u:pw:_) = splitOn ":" up
-        (hp:db:_) = splitOn "/" server
-        (h:p:_) = splitOn ":" hp
 
 main = do
         hSetBuffering stdout LineBuffering
@@ -56,11 +42,21 @@ main = do
         let store = clientsessionStore key :: SessionStore (ResourceT IO) String String
         pool <- DB.createPool (T.encodeUtf8 $ getConnectionString dbp)
         let rp = DB.runPool pool
+        let getVaultS = getVault session
 
         scotty port $ do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
-            get "/" $ html "Hello World!"
+            get "/" $ do
+                req <- request
+                text "resp"
+                auth <- isLoggedIn $ getVaultS req
+                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                t <- liftIO $ runResourceT $ sl "timeout"
+                let t1 = fromMaybe "Nothing" t
+                case auth of
+                    True -> text $ TL.pack ("You are logged in. " ++ t1)
+                    False -> text "You are not logged in."
             get "/register" $ html Html.register
             post "/register" $ do
                 e <- param "email"
@@ -71,7 +67,6 @@ main = do
             post "/login" $ do
                 e <- param "email"
                 p <- param "password"
-                --let p = ""
                 req <- request
                 let (sl , si) = fromJust $ Vault.lookup session (vault req)
                 resp <- liftIO $ rp $ DB.login e p
@@ -79,7 +74,9 @@ main = do
                     False -> status status403
                     True -> do
                         liftIO $ runResourceT $ si "email" $ e
-                        redirect "/"
+                        time <- liftIO $ getCurrentTime
+                        liftIO $ runResourceT $ si "timeout" $ show $ addUTCTime loginTimeout time
+                        text $ TL.pack $ show $ addUTCTime loginTimeout time
             get "/get" $ do
                 req <- request
                 let (sl , si) = fromJust $ Vault.lookup session (vault req)
@@ -110,3 +107,30 @@ main = do
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
 
+getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
+    " host=" , h , " port=" , p , " dbname=" , db]
+    where
+        (auth:server:_) = splitOn "@" t
+        (_:up:_) = splitOn "//" auth
+        (u:pw:_) = splitOn ":" up
+        (hp:db:_) = splitOn "/" server
+        (h:p:_) = splitOn ":" hp
+
+isLoggedIn (sl,si) = do
+        timeout <- liftIO $ runResourceT $ (sl "timeout" :: ResourceT IO (Maybe String))
+        time <- liftIO $ getCurrentTime
+        case timeout of
+            Nothing -> return False
+            Just [] -> return False
+            Just t -> do
+                if time > (read $ t) then do
+                                liftIO $ runResourceT $ si "timeout" ""
+                                liftIO $ runResourceT $ si "email" ""
+                                return False
+                else do
+                    liftIO $ runResourceT $ si "timeout" $ show $ addUTCTime loginTimeout time
+                    return True
+
+getVault session req = fromJust $ Vault.lookup session (vault req)
+
+loginTimeout = 900
