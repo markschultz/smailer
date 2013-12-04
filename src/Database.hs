@@ -36,7 +36,12 @@ insertRow = do
     id <- insert $ TimeEntry time
     liftIO $ print id
 
-login u p = undefined
+login e p = do
+        runMigration migrateAll
+        user <- selectFirst [ UserEmail ==. e, UserPassword ==. p] []
+        case user of
+            Nothing -> return False
+            Just _ -> return True
 
 register e p = do
         runMigration migrateAll

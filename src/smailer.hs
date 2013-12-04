@@ -61,16 +61,25 @@ main = do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
-            get "/register" $ do
-                html Html.register
+            get "/register" $ html Html.register
             post "/register" $ do
-                p <- param "password"
                 e <- param "email"
+                p <- param "password"
                 resp <- liftIO $ rp $ DB.register e p
                 text $ TL.pack $ show $ resp
+            get "/login" $ html Html.login
             post "/login" $ do
-                let uid = DB.login
-                status status200
+                e <- param "email"
+                p <- param "password"
+                --let p = ""
+                req <- request
+                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                resp <- liftIO $ rp $ DB.login e p
+                case resp of
+                    False -> status status403
+                    True -> do
+                        liftIO $ runResourceT $ si "email" $ e
+                        redirect "/"
             get "/get" $ do
                 req <- request
                 let (sl , si) = fromJust $ Vault.lookup session (vault req)

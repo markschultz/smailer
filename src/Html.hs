@@ -27,3 +27,14 @@ register = renderHtml $ H.html $ do
         H.input ! type_ "password" ! name "password"
         H.br
         H.input ! type_ "submit"
+
+login = renderHtml $ H.html $ do
+    H.h1 $ "Login"
+    H.form ! A.id "login" ! method "post" ! action "/login" $ do
+        H.h3 "Email Address: "
+        H.input ! type_ "email" ! name "email"
+        H.br
+        H.h3 "Password: "
+        H.input ! type_ "password" ! name "password"
+        H.br
+        H.input ! type_ "submit"
