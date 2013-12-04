@@ -61,8 +61,14 @@ main = do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
-            --get "/register" $ do
-
+            get "/register" $ do
+                html Html.register
+            post "/register" $ do
+                u <- param "username"
+                p <- param "password"
+                e <- param "email"
+                resp <- liftIO $ rp $ DB.register u p e
+                text $ TL.pack $ show $ resp
             post "/login" $ do
                 let uid = DB.login
                 status status200

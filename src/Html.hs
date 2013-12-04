@@ -16,3 +16,17 @@ sendEmailTest to subject resp = renderHtml $ H.html $ do
     H.br
     H.h1 "Response:"
     H.p $ H.toHtml $ resp
+
+register = renderHtml $ H.html $ do
+    H.h1 $ "Register"
+    H.form ! A.id "register" ! method "post" ! action "/register" $ do
+        H.h3 "Username: "
+        H.input ! type_ "text" ! name "username"
+        H.br
+        H.h3 "Password: "
+        H.input ! type_ "password" ! name "password"
+        H.br
+        H.h3 "Email Address: "
+        H.input ! type_ "text" ! name "email"
+        H.br
+        H.input ! type_ "submit"

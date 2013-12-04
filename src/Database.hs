@@ -38,3 +38,10 @@ insertRow = do
     liftIO $ print id
 
 login u p = undefined
+
+register u p e = do
+        runMigration migrateAll
+        id <- insert $ User u p e
+        liftIO $ print id
+        return id
+
