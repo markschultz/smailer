@@ -4,6 +4,7 @@ import Web.Scotty
 import Data.Time
 import Mailgun
 import qualified Database as DB
+import qualified Html as Html
 import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
@@ -15,29 +16,23 @@ import Data.Text.Encoding as T
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
-import qualified Text.Blaze.Html5 as H
-import Text.Blaze.Html5 ((!))
-import Text.Blaze.Html5.Attributes as A
-import Text.Blaze.Html.Renderer.Text (renderHtml)
 import System.IO
-import qualified Database.Persist
-import qualified Database.Persist.TH
-import qualified Database.Persist.Postgresql
+--import qualified Database.Persist
+--import qualified Database.Persist.TH
+--import qualified Database.Persist.Postgresql
 import Control.Monad.Trans.Resource
-import Control.Monad.Logger
+--import Control.Monad.Logger
 import Network.Wai.Middleware.Gzip (gzip,def)
 import Network.Wai.Session.ClientSession (clientsessionStore)
 import Network.Wai.Session
 import Network.Wai
-import Network.Wai.Middleware.RequestLogger
+--import Network.Wai.Middleware.RequestLogger
 import Web.ClientSession (getDefaultKey)
 import qualified Data.Vault as Vault
 import Data.Default (def)
 import Data.String (fromString)
 import Web.Cookie
 import Data.Maybe
-
-blaze = html . renderHtml
 
 getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
     " host=" , h , " port=" , p , " dbname=" , db]
@@ -66,6 +61,8 @@ main = do
             middleware $ withSession store (fromString "SESSION") def session
             middleware $ gzip def
             get "/" $ html "Hello World!"
+            --get "/register" $ do
+
             post "/login" $ do
                 let uid = DB.login
                 status status200
@@ -95,13 +92,7 @@ main = do
                     ("notification@" <> T.encodeUtf8 mgDomain)
                     subject "This is a test email."
                     (B8.pack mgKey) (T.unpack mgDomain)
-                blaze $ H.html $ do
-                    H.h1 $ H.toHtml $ "Subject: " <>
-                        T.decodeLatin1 subject
-                    H.h1 $ H.toHtml $ "To: " <> T.decodeLatin1 to
-                    H.br
-                    H.h1 "Response:"
-                    H.p $ H.toHtml $ T.pack resp
+                html $ Html.sendEmailTest to subject resp
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
 

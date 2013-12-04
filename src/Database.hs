@@ -18,6 +18,12 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 TimeEntry
     stamp UTCTime
     deriving Show
+User
+    username String
+    password String
+    email String
+    NameEmail username email
+    deriving Show
 |]
 
 createPool c = createPostgresqlPool c 20
