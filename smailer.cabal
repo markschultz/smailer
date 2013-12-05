@@ -16,7 +16,7 @@ executable smailer
   build-depends:
     base >=4.5 && <4.7,
     scotty,
-    http-conduit,
+    http-conduit < 2.0.0,
     network,
     bytestring,
     text,
