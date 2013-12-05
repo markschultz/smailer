@@ -29,14 +29,14 @@ executable smailer
     persistent-postgresql,
     persistent-template,
     resourcet,
-    monad-logger,
+    monad-logger < 0.3.3.0,
     wai-extra,
     data-default,
     vault <0.3.0,
     wai-session,
     wai-session-clientsession,
     clientsession,
-    wai,
+    wai < 2.0.0,
     cookie
   hs-source-dirs: src
   -- ghc-options: -O2
