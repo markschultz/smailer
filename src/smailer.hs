@@ -81,7 +81,8 @@ main = do
                     True -> do
                         liftIO $ runResourceT $ si "email" $ e
                         time <- liftIO $ getCurrentTime
-                        liftIO $ runResourceT $ si "timeout" $ show $ addUTCTime loginTimeout time
+                        liftIO $ runResourceT $ si "timeout"
+                            $ show $ addUTCTime loginTimeout time
                         text $ TL.pack $ show $ addUTCTime loginTimeout time
             get "/get" $ do
                 req <- request
@@ -120,7 +121,8 @@ getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
         (h:p:_) = splitOn ":" hp
 
 isLoggedIn (sl,si) = do
-        timeout <- liftIO $ runResourceT $ (sl "timeout" :: ResourceT IO (Maybe String))
+        timeout <- liftIO $ runResourceT $
+            (sl "timeout" :: ResourceT IO (Maybe String))
         time <- liftIO $ getCurrentTime
         case timeout of
             Nothing -> return False
@@ -131,7 +133,8 @@ isLoggedIn (sl,si) = do
                     liftIO $ runResourceT $ si "email" ""
                     return False
                 else do
-                    liftIO $ runResourceT $ si "timeout" $ show $ addUTCTime loginTimeout time
+                    liftIO $ runResourceT $ si "timeout" $ show $
+                        addUTCTime loginTimeout time
                     return True
 
 getVault session req = fromJust $ Vault.lookup session (vault req)

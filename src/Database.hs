@@ -15,13 +15,16 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Logger
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-TimeEntry
-    stamp UTCTime
-    deriving Show
 User
     email String
     password String
+    group GroupId Eq default=1
     Email email
+    deriving Show
+
+Group
+    name String
+    admin UserId
     deriving Show
 |]
 
@@ -38,7 +41,7 @@ login e p = do
 
 register e p = do
         runMigration migrateAll
-        id <- insert $ User e p
+        id <- insert $ User e p $ Key {unKey = PersistInt64 1}
         liftIO $ print id
         return id
 
