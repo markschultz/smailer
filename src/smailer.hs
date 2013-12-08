@@ -95,9 +95,6 @@ main = do
                 liftIO $ runResourceT $ si "u" $ show t
                 status status200
             get "/db" $ text $ TL.fromStrict $ getConnectionString dbp
-            get "/db1" $ do
-                liftIO $ rp DB.insertRow
-                status status200
             post "/test-trigger" $
                 status status200
             post "/email-trigger" $

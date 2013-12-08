@@ -29,13 +29,6 @@ createPool c = createPostgresqlPool c 20
 
 runPool p sql = runSqlPersistMPool sql p
 
-insertRow :: (MonadBaseControl IO m, MonadResource m, MonadLogger m) => SqlPersistT m ()
-insertRow = do
-    runMigration migrateAll
-    time <- liftIO getCurrentTime
-    id <- insert $ TimeEntry time
-    liftIO $ print id
-
 login e p = do
         runMigration migrateAll
         user <- selectFirst [ UserEmail ==. e, UserPassword ==. p] []
