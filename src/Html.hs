@@ -17,24 +17,30 @@ sendEmailTest to subject resp = renderHtml $ H.html $ do
     H.h1 "Response:"
     H.p $ H.toHtml $ resp
 
-register = renderHtml $ H.html $ do
+register groups = renderHtml $ H.html $ do
     H.h1 $ "Register"
-    H.form ! A.id "register" ! method "post" ! action "/register" $ do
+    H.form ! A.id "register" ! A.method "post" ! A.action "/register" $ do
         H.h3 "Email Address: "
-        H.input ! type_ "email" ! name "email"
+        H.input ! A.type_ "email" ! A.name "email"
         H.br
         H.h3 "Password: "
-        H.input ! type_ "password" ! name "password"
+        H.input ! A.type_ "password" ! A.name "password"
         H.br
-        H.input ! type_ "submit"
+        H.h3 "Group: "
+        H.select ! A.name "gid" $ do
+            mapM_ (\(lbl,id) -> H.option ! A.value (H.toValue id) $ H.toHtml lbl) groups
+        H.input ! A.type_ "submit"
 
 login = renderHtml $ H.html $ do
     H.h1 $ "Login"
-    H.form ! A.id "login" ! method "post" ! action "/login" $ do
+    H.form ! A.id "login" ! A.method "post" ! A.action "/login" $ do
         H.h3 "Email Address: "
-        H.input ! type_ "email" ! name "email"
+        H.input ! A.type_ "email" ! A.name "email"
         H.br
         H.h3 "Password: "
-        H.input ! type_ "password" ! name "password"
+        H.input ! A.type_ "password" ! A.name "password"
         H.br
-        H.input ! type_ "submit"
+        H.input ! A.type_ "submit"
+
+settings = renderHtml $ H.html $ do
+    H.h1 $ "Settings"

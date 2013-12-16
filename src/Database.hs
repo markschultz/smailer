@@ -4,8 +4,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module Database where
 
+import qualified Data.Text as T
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Postgresql
@@ -24,13 +26,22 @@ User
 
 Group
     name String
-    admin UserId
+    admin UserId Maybe
     deriving Show
 |]
+
+getField e ff = ff $ entityVal e
 
 createPool c = createPostgresqlPool c 20
 
 runPool p sql = runSqlPersistMPool sql p
+
+getGroups = do
+        groups <- selectList [] []
+        let names = map (\e -> (getField e groupName, case (fromPersistValueText $ unKey $ entityKey e) of
+                        Left l -> T.pack l
+                        Right r -> r)) groups
+        return names
 
 login e p = do
         runMigration migrateAll
@@ -39,9 +50,16 @@ login e p = do
             Nothing -> return False
             Just _ -> return True
 
-register e p = do
+register e p g = do
         runMigration migrateAll
-        id <- insert $ User e p $ Key {unKey = PersistInt64 1}
-        liftIO $ print id
-        return id
+        let key = Key {unKey = PersistInt64 g}
+        group <- selectFirst [ GroupId ==. key] []
+        case group of
+            Nothing -> return Nothing
+            Just jGroup -> do
+                --id2 <- insert $ User e p $ Key {unKey = PersistInt64 1}
+                id <- insert $ User e p $ entityKey jGroup
+                liftIO $ print id
+                return $ Just id
 
+updateGroup uid gid = undefined

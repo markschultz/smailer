@@ -63,11 +63,24 @@ main = do
                 liftIO $ runResourceT $ si "timeout" ""
                 liftIO $ runResourceT $ si "email" ""
                 redirect "/"
-            get "/register" $ html Html.register
+            get "/settings" $ html Html.settings
+            post "/settings" $ do
+                --g <- param "gid"
+                req <- request
+                auth <- isLoggedIn $ getVaultS req
+                case auth of
+                    True -> do
+                        resp <- liftIO $ rp $ DB.updateGroup "gid" "uid"
+                        status status200
+                    False -> status status401
+            get "/register" $ do
+                g <- liftIO $ rp $ DB.getGroups
+                html $ Html.register g
             post "/register" $ do
                 e <- param "email"
                 p <- param "password"
-                resp <- liftIO $ rp $ DB.register e p
+                g <- param "gid"
+                resp <- liftIO $ rp $ DB.register e p (read g)
                 text $ TL.pack $ show $ resp
             get "/login" $ html Html.login
             post "/login" $ do
