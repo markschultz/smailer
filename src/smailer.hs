@@ -18,7 +18,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import System.IO
 import Control.Monad.Trans.Resource
-import Network.Wai.Middleware.Gzip (gzip,def)
+--import Network.Wai.Middleware.Gzip (gzip,def)
 import Network.Wai.Session.ClientSession (clientsessionStore)
 import Network.Wai.Session
 import Network.Wai
@@ -46,7 +46,7 @@ main = do
 
         scotty port $ do
             middleware $ withSession store (fromString "SESSION") def session
-            middleware $ gzip def
+            --middleware $ gzip def
             get "/" $ do
                 req <- request
                 text "resp"
