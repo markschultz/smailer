@@ -29,6 +29,7 @@ register groups = renderHtml $ H.html $ do
         H.h3 "Group: "
         H.select ! A.name "gid" $ do
             mapM_ (\(lbl,id) -> H.option ! A.value (H.toValue id) $ H.toHtml lbl) groups
+        H.br
         H.input ! A.type_ "submit"
 
 login = renderHtml $ H.html $ do
@@ -42,5 +43,21 @@ login = renderHtml $ H.html $ do
         H.br
         H.input ! A.type_ "submit"
 
-settings = renderHtml $ H.html $ do
-    H.h1 $ "Settings"
+settings e g groups = renderHtml $ H.html $ do
+    H.h1 "Settings"
+    H.br
+    H.h2 "Current Settings"
+    H.dl $ do
+        H.dt "Email Address"
+        H.dd e
+        H.dt "Group"
+        H.dd g
+    H.br
+    H.h2 "Update Settings"
+    H.form ! A.id "settings" ! A.method "post" ! A.action "/settings" $ do
+        H.h3 "Update Group"
+        H.select ! A.name "gid" $ do
+            mapM_ (\(lbl,id) -> H.option ! A.value (H.toValue id) $ H.toHtml lbl) groups
+
+
+
