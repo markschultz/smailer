@@ -4,8 +4,8 @@ import Web.Scotty
 import Data.Time
 import Mailgun
 import qualified Database as DB
-import qualified Html as Html
-import Control.Concurrent
+import qualified Html
+--import Control.Concurrent
 import Data.Monoid
 import Control.Monad.IO.Class (liftIO)
 import System.Environment
@@ -13,7 +13,7 @@ import Control.Monad
 import Network.HTTP.Types
 import Data.Text as T
 import Data.Text.Encoding as T
-import qualified Data.ByteString as B
+--import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import System.IO
@@ -24,11 +24,12 @@ import Network.Wai.Session
 import Network.Wai
 import Web.ClientSession (getDefaultKey)
 import qualified Data.Vault as Vault
-import Data.Default (def)
+--import Data.Default (def)
 import Data.String (fromString)
 import Web.Cookie
 import Data.Maybe
 
+main :: IO ()
 main = do
         hSetBuffering stdout LineBuffering
         port <- liftM read $ getEnv "PORT"
@@ -51,20 +52,19 @@ main = do
                 req <- request
                 text "resp"
                 auth <- isLoggedIn $ getVaultS req
-                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                let (sl , _ ) = fromJust $ Vault.lookup session (vault req)
                 t <- liftIO $ runResourceT $ sl "timeout"
                 let t1 = fromMaybe "Nothing" t
-                case auth of
-                    True -> text $ TL.pack ("You are logged in. " ++ t1)
-                    False -> text "You are not logged in."
+                text (if auth then TL.pack ("You are logged in. " ++ t1)
+                      else "You are not logged in.")
             get "/logout" $ do
                 req <- request
-                let (sl, si) = getVaultS req
+                let ( _ , si) = getVaultS req
                 liftIO $ runResourceT $ si "timeout" ""
                 liftIO $ runResourceT $ si "email" ""
                 redirect "/"
             get "/settings" $ do
-                g <- liftIO $ rp $ DB.getGroups
+                g <- liftIO $ rp DB.getGroups
                 html $ Html.settings "test@test.com" "group1" g
             post "/settings" $ do
                 --g <- param "gid"
@@ -72,18 +72,18 @@ main = do
                 auth <- isLoggedIn $ getVaultS req
                 case auth of
                     True -> do
-                        resp <- liftIO $ rp $ DB.updateGroup "uid" "gid"
+                        _ <- liftIO $ rp $ DB.updateGroup "uid" "gid"
                         status status200
                     False -> status status401
             get "/register" $ do
-                g <- liftIO $ rp $ DB.getGroups
+                g <- liftIO $ rp DB.getGroups
                 html $ Html.register g
             post "/register" $ do
                 e <- param "email"
                 p <- param "password"
                 g <- param "gid"
                 resp <- liftIO $ rp $ DB.register e p (read g)
-                text $ TL.pack $ show $ resp
+                text $ TL.pack $ show resp
             get "/login" $ html Html.login
             post "/login" $ do
                 e <- param "email"
@@ -94,19 +94,19 @@ main = do
                 case resp of
                     False -> status status403
                     True -> do
-                        liftIO $ runResourceT $ si "email" $ e
-                        time <- liftIO $ getCurrentTime
+                        liftIO $ runResourceT $ si "email" e
+                        time <- liftIO getCurrentTime
                         liftIO $ runResourceT $ si "timeout"
                             $ show $ addUTCTime loginTimeout time
                         text $ TL.pack $ show $ addUTCTime loginTimeout time
             get "/get" $ do
                 req <- request
-                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                let (sl , _ ) = fromJust $ Vault.lookup session (vault req)
                 u <- liftIO $ runResourceT $ sl "u"
                 text $ TL.pack $ fromMaybe "Nothing" u
             get "/set" $ do
                 req <- request
-                let (sl , si) = fromJust $ Vault.lookup session (vault req)
+                let ( _ , si) = fromJust $ Vault.lookup session (vault req)
                 t <- liftIO getCurrentTime
                 liftIO $ runResourceT $ si "u" $ show t
                 status status200
@@ -126,6 +126,7 @@ main = do
             get "/loaderio-9204d6a37af2101e440254b90c29248a" $
                 text "loaderio-9204d6a37af2101e440254b90c29248a"
 
+getConnectionString :: Text -> Text
 getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
     " host=" , h , " port=" , p , " dbname=" , db]
     where
@@ -136,22 +137,24 @@ getConnectionString t = mconcat ["user=" , u , " password=" , pw ,
         (h:p:_) = splitOn ":" hp
 
 isLoggedIn (sl,si) = do
-        timeout <- liftIO $ runResourceT $
+        timeout <- liftIO $ runResourceT
             (sl "timeout" :: ResourceT IO (Maybe String))
-        time <- liftIO $ getCurrentTime
+        time <- liftIO getCurrentTime
         case timeout of
             Nothing -> return False
             Just [] -> return False
-            Just t -> do
-                if time > (read $ t) then do
-                    liftIO $ runResourceT $ si "timeout" ""
-                    liftIO $ runResourceT $ si "email" ""
+            Just t ->
+                if time > read t then do
+                    _ <- liftIO $ runResourceT $ si "timeout" ""
+                    _ <- liftIO $ runResourceT $ si "email" ""
                     return False
                 else do
-                    liftIO $ runResourceT $ si "timeout" $ show $
+                    _ <- liftIO $ runResourceT $ si "timeout" $ show $
                         addUTCTime loginTimeout time
                     return True
 
+getVault :: Vault.Key a -> Request -> a
 getVault session req = fromJust $ Vault.lookup session (vault req)
 
+loginTimeout :: NominalDiffTime
 loginTimeout = 900

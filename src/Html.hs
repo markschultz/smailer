@@ -58,6 +58,3 @@ settings e g groups = renderHtml $ H.html $ do
         H.h3 "Update Group"
         H.select ! A.name "gid" $ do
             mapM_ (\(lbl,id) -> H.option ! A.value (H.toValue id) $ H.toHtml lbl) groups
-
-
-

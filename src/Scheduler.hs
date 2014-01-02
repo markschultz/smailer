@@ -2,6 +2,7 @@ module Scheduler where
 
 import Control.Concurrent
 import Data.Time
+import Data.ByteString
 
 testThread n = do
         time <- getCurrentTime

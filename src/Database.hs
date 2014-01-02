@@ -11,10 +11,7 @@ import qualified Data.Text as T
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Postgresql
-import Data.Time
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Resource
-import Control.Monad.Logger
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
