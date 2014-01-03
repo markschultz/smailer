@@ -123,8 +123,6 @@ main = do
                     subject "This is a test email."
                     (B8.pack mgKey) (T.unpack mgDomain)
                 html $ Html.sendEmailTest to subject resp
-            get "/loaderio-9204d6a37af2101e440254b90c29248a" $
-                text "loaderio-9204d6a37af2101e440254b90c29248a"
 
 getConnectionString :: Text -> Text
 getConnectionString t = mconcat ["user=" , u , " password=" , pw ,

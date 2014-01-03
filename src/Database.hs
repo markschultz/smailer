@@ -34,6 +34,7 @@ createPool c = createPostgresqlPool c 20
 runPool p sql = runSqlPersistMPool sql p
 
 getGroups = do
+        runMigration migrateAll
         groups <- selectList [] []
         let names = map (\e -> (getField e groupName, case (fromPersistValueText $ unKey $ entityKey e) of
                         Left l -> T.pack l
