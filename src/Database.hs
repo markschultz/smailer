@@ -33,8 +33,9 @@ createPool c = createPostgresqlPool c 20
 
 runPool p sql = runSqlPersistMPool sql p
 
+doMigrate = runMigration migrateAll
+
 getGroups = do
-        runMigration migrateAll
         groups <- selectList [] []
         let names = map (\e -> (getField e groupName, case (fromPersistValueText $ unKey $ entityKey e) of
                         Left l -> T.pack l
@@ -42,14 +43,12 @@ getGroups = do
         return names
 
 login e p = do
-        runMigration migrateAll
         user <- selectFirst [ UserEmail ==. e, UserPassword ==. p] []
         case user of
             Nothing -> return False
             Just _ -> return True
 
 register e p g = do
-        runMigration migrateAll
         let key = Key {unKey = PersistInt64 g}
         group <- selectFirst [ GroupId ==. key] []
         case group of

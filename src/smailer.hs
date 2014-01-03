@@ -44,6 +44,7 @@ main = do
         pool <- DB.createPool (T.encodeUtf8 $ getConnectionString dbp)
         let rp = DB.runPool pool
         let getVaultS = getVault session
+        rp $ DB.doMigrate
 
         scotty port $ do
             middleware $ withSession store (fromString "SESSION") def session
